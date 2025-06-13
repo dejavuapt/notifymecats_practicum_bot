@@ -1,5 +1,5 @@
 from typing import TypeVar, Optional
-from utils.types import JSONDict
+from pokeroom.utils.types import JSONDict
 
 Poke_T = TypeVar("Poke_T", bound = "PokeroomObject", covariant = True)
 
@@ -41,17 +41,36 @@ class PokeroomObject:
 class User(PokeroomObject):
     pass
 
+
+class Token(PokeroomObject):
+    def __init__(
+        self,
+        refresh: str,
+        access: str
+    ) -> None:
+        super().__init__()
+        
+        self.refresh: str = refresh
+        self.access: str = access
+        
+        self._attrs = (self.refresh, self.access)
+        
+    @classmethod
+    def de_json(cls, data) -> "Token":
+        data = cls._parse_data(data)
+        return super().de_json(data)
+
 class Team(PokeroomObject):
     def __init__(self,
                  id: str,
                  name: str,
-                 owner_id: User,
+                 owner_id: str,
                  description: Optional[str] = None,) -> None:
         super().__init__()
         
         self.name: str = name
         self.id: str = id
-        self.owner_id: User = owner_id
+        self.owner_id: str = owner_id
         self.description: Optional[str] = description
         
         self._attrs = (self.id, self.name, self.owner_id, self.description)
@@ -59,7 +78,7 @@ class Team(PokeroomObject):
     @classmethod
     def de_json(cls, data: JSONDict) -> "Team":
         data = cls._parse_data(data)
-        data["owner_id"] = User.de_json(data.get("owner_id"))
+        # data["owner_id"] = User.de_json(data.get("owner_id"))
         return super().de_json(data=data)
         
         

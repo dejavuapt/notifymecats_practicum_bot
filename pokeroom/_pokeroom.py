@@ -1,19 +1,18 @@
-from utils.types import BaseUrl, JSONDict
+from pokeroom.utils.types import BaseUrl, JSONDict
 
-from error import InvalidJWTToken
-from endpoints import Endpoints
-from functools import cache
+from pokeroom.error import InvalidJWTToken
+from pokeroom.endpoints import Endpoints
 from typing import Union, Optional, Any
 import requests
 
-from _pokeroomobject import Team, User
-from _baserequest import BaseRequest
+from pokeroom._pokeroomobject import Team, Token
+from pokeroom._baserequest import BaseRequest
 
 class Pokeroom(BaseRequest):
     
     def __init__(
         self,
-        base_url: BaseUrl = "http://127.0.0.1/api/v1/",
+        base_url: BaseUrl = "http://localhost:8000/api/v1/",
     ):  
         super().__init__("Pokeroom API")
         self._base_url: BaseUrl = base_url
@@ -25,32 +24,57 @@ class Pokeroom(BaseRequest):
     def base_url(self) -> str:
         return self._base_url
     
-    async def registration_in_service(self, 
-                                      user_data: Optional[JSONDict] = None,
-                                      **kwargs, ) -> Union[bool, JSONDict]:
+    async def registration_in_service(
+        self, 
+        user_data: Optional[JSONDict] = None,
+        **kwargs, 
+    ) -> Token:
+        """
+        Registers a user in the service
+        
+        Args:
+            user_data (:obj:`JSONDict`): User credentials username, email and password
+            
+        Returns:
+            result (:obj:`bool`, :obj:`JSONDict`): If errors - :obj: `False` else 
+            dictionary of access and refresh tokens
+        """
         if user_data is None:
             return False # TODO: need raise. {username, password, email}
         
         # TODO: Need some do when cred not good
-        response_register: Union[bool, JSONDict] = await self._do_post(
+        result_reg: Union[bool, JSONDict] = await self._do_post(
             self._ENDPOINTS.USERS_LIST,
             data = user_data,
         )
-        if response_register:
-            response = await self._do_post(
+        print(f"{result_reg}")
+        if isinstance(result_reg, dict):
+            result = await self._do_post(
                 self._ENDPOINTS.TOKEN_CREATE,
                 data = {
-                    "username": response_register.get("username"),
+                    "username": result_reg.get("username"),
                     "password": user_data.get("password")
                 }
             )
-            return response # format: {"refresh": str, "access": str}
-        return False
-        
+            print(result)
+            return Token.de_json(result)
+        else:
+            raise ValueError("lazy..")
     
-    async def get_teams(self,
-                        access_token: Optional[JSONDict] = None,
-                        ) -> Union[bool, tuple[Team, ...]]:
+    async def get_teams(
+        self,
+        access_token: str,
+    ) -> tuple[Team, ...]:
+        """
+        Retrieves the list of user teams. 
+        Teams gets by owner user or where he is a member.
+        
+        Args:
+            access_token (:obj:`str`): JWT Token to access data
+            
+        Returns:
+            result (:obj:`bool`, tuple[:class:`Team`]): List of user's teams or if error - False
+        """
         if access_token is None:
             raise InvalidJWTToken(f"Call `{self.get_teams.__name__}` need user's token to access API.")
         
@@ -60,5 +84,5 @@ class Pokeroom(BaseRequest):
             self._ENDPOINTS.USER_TEAMS_LIST,
             headers
         )
-        # response must me a list in everything. Check exception in de json method
+        # response must be a list in everything. Check exception in `de_json` method
         return Team.de_list(result)

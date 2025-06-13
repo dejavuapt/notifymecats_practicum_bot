@@ -14,7 +14,7 @@ class Endpoints():
     
     @property
     def TOKEN_CREATE(self) -> str:
-        return self.TOKEN_CREATE
+        return self._TOKEN_CREATE
         
     @property
     @cache
