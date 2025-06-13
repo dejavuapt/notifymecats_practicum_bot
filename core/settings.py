@@ -16,8 +16,8 @@ URL_DOGS: str = 'https://api.thedogapi.com/v1/images/search'
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s(%(filename)s/%(funcName)s:%(lineno)d): %(message)s || Created at %(asctime)s by %(name)s", #\x1b[33;20m \x1b[0m
-    filename='main.log',
-    filemode='w',
+    # filename='main.log',
+    # filemode='w',
 )
 
 logger = logging.getLogger("core")
