@@ -1,6 +1,7 @@
 from utils.types import BaseUrl, JSONDict
 from utils.logging import get_logger
 from error import InvalidJWTToken
+from endpoints import Endpoints
 from functools import cache
 from typing import Union, Optional, Any
 import requests
@@ -16,6 +17,7 @@ class Pokeroom():
         self._base_url: BaseUrl = base_url
         
     _LOGGER = get_logger(__name__)
+    _ENDPOINTS = Endpoints()
     
     @property
     def base_url(self) -> str:
@@ -27,7 +29,21 @@ class Pokeroom():
         if user_data is None:
             return False # TODO: need raise. {username, password, email}
         
-        
+        # TODO: Need some do when cred not good
+        response_register: Union[bool, JSONDict] = await self._do_post(
+            self._ENDPOINTS.USERS_LIST,
+            data = user_data,
+        )
+        if response_register:
+            response = await self._do_post(
+                self._ENDPOINTS.TOKEN_CREATE,
+                data = {
+                    "username": response_register.get("username"),
+                    "password": user_data.get("password")
+                }
+            )
+            return response # format: {"refresh": str, "access": str}
+        return False
         
     
     async def get_teams(self,
@@ -39,7 +55,7 @@ class Pokeroom():
         headers: JSONDict = {"Authorization": f"Bearer {access_token}"}
         
         return await self._do_get(
-            "u/teams",
+            self._ENDPOINTS.USER_TEAMS_LIST,
             headers
         )    
         
@@ -74,7 +90,7 @@ class Pokeroom():
         
         
     
-    def _do_post(self, endpoint: str, data: JSONDict, **kwargs, ):
+    def _do_post(self, endpoint: str, data: JSONDict, **kwargs, ) -> Union[bool, JSONDict, list[JSONDict]]:
         pass
     
     # def _do_patch(self, endpoint: str, data: JSONDict, **kwargs, ): 
