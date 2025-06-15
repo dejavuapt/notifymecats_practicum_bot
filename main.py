@@ -9,9 +9,6 @@ from bot.methods import (
     send_cat_image, 
     wake_up_samurai, 
     register_in_pokeroom,
-    recieve_email,
-    recieve_username,
-    recieve_password
 )
 from bot.methods import USERNAME, EMAIL, PASSWORD
 
@@ -25,16 +22,7 @@ def main() -> None:
     # Очередь имеет значение. от частного к общему!
     # app.add_handler(CommandHandler(command='newcat', callback=send_cat_image))
     app.add_handler(CommandHandler(command='start', callback=wake_up_samurai))
-    app.add_handler(ConversationHandler(
-        entry_points=[CommandHandler(command='register', callback=register_in_pokeroom)],
-        states={
-            USERNAME: [MessageHandler(filters=filters.TEXT, callback=recieve_username)],
-            EMAIL: [MessageHandler(filters=filters.TEXT, callback=recieve_email)],
-            PASSWORD: [MessageHandler(filters=filters.TEXT, callback=recieve_password)],
-        },
-        fallbacks=[]
-    ))
-    
+    app.add_handler(CommandHandler(command='register', callback=register_in_pokeroom)) 
     # poll_interval также блокирует на 20 секунд дело 0.0 итак базово стоит
     app.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=2.0)
 

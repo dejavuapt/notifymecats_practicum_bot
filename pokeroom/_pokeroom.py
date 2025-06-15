@@ -33,7 +33,7 @@ class Pokeroom(BaseRequest):
         Registers a user in the service
         
         Args:
-            user_data (:obj:`JSONDict`): User credentials username, email and password
+            user_data (:obj:`JSONDict`): User credentials username, telegram_id and password
             
         Returns:
             result (:obj:`bool`, :obj:`JSONDict`): If errors - :obj: `False` else 
@@ -52,7 +52,7 @@ class Pokeroom(BaseRequest):
             result = await self._do_post(
                 self._ENDPOINTS.TOKEN_CREATE,
                 data = {
-                    "username": result_reg.get("username"),
+                    "username": user_data.get("username"),
                     "password": user_data.get("password")
                 }
             )
