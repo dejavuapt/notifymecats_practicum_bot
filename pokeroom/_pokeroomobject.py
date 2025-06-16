@@ -62,18 +62,19 @@ class Token(PokeroomObject):
 
 class Team(PokeroomObject):
     def __init__(self,
-                 id: str,
-                 name: str,
-                 owner_id: str,
-                 description: Optional[str] = None,) -> None:
+                 team_id: str,
+                 owner: str,
+                 role: str,
+                 data: JSONDict) -> None:
         super().__init__()
         
-        self.name: str = name
-        self.id: str = id
-        self.owner_id: str = owner_id
-        self.description: Optional[str] = description
+        self.name: str = data.get("name", None)
+        self.id: str = team_id
+        self.owner_id: str = owner
+        self.user_role: str = role
+        self.description: Optional[str] = data.get("description", None)
         
-        self._attrs = (self.id, self.name, self.owner_id, self.description)
+        self._attrs = (self.id, self.name, self.owner_id, self.description, self.user_role)
         
     @classmethod
     def de_json(cls, data: JSONDict) -> "Team":

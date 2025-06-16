@@ -91,7 +91,6 @@ class Pokeroom(BaseRequest):
         self,
         access_token: str, 
         name: str, 
-        *,
         description: Optional[str] = None
     ) -> Team:
         if access_token is None:

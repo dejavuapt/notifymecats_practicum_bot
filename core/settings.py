@@ -21,3 +21,18 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("core")
+
+DATABASE = {
+    "ENGINE": os.getenv("DB_ENGINE", "sqlite"),
+    "NAME": os.getenv("DB_NAME")
+}
+
+def build_database_url(settings: dict) -> str:
+    engine:str = settings.get("ENGINE")
+    if engine == "sqlite":
+        return f"sqlite:///{settings.get('NAME')}"
+
+    raise ValueError(f"Unsupported DB engine: {engine}")
+
+
+DATABASE_URL = build_database_url(DATABASE)

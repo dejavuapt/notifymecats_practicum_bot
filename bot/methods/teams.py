@@ -1,55 +1,24 @@
-from telegram import Update, Chat, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
-import hashlib
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
-from core import catapi
 from pokeroom._pokeroom import Pokeroom
 from pokeroom._pokeroomobject import Token, Team
+from core.db import get_user_by_telegram_id
 
 pokeroom: Pokeroom = Pokeroom()
 
-async def send_cat_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat: Chat = update.effective_chat
-    await context.bot.send_photo(chat_id=chat.id, photo=catapi.get_url_cat_image())
-
-async def wake_up_samurai(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat: Chat = update.effective_chat
-    name: str = update.message.chat.first_name
-    button: ReplyKeyboardMarkup = ReplyKeyboardMarkup([['/register']], resize_keyboard=True)
-    await context.bot.send_message(
-        chat_id=chat.id, 
-        text=f'Хей, {name}! Давай зарегистрируемся и сыграем в покер планирование!',
-        reply_markup=button
+async def get_teams(update: Update, cotnext: ContextTypes.DEFAULT_TYPE) -> None:
+    teams: tuple[Team, ...] = await pokeroom.get_teams(
+        access_token=get_user_by_telegram_id(update.effective_user.id).access_token
     )
+    teamss = [team.name for team in teams]
+
+    await update.message.reply_text(
+        f"Is your teams: {teamss}",
+        parse_mode="Markdown",
+        # reply_markup=reply_keyboard
+    ) 
     
-    
-USERNAME, EMAIL, PASSWORD = range(3)
-    
-async def register_in_pokeroom(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    hashed_password = hashlib\
-        .sha256(string=f"{update.effective_user.id}{update.effective_user.name}".encode())\
-        .hexdigest()[:20]
-    
-    print(update.message.chat.id) 
-    try:
-        tokens: Token = await pokeroom.registration_in_service(
-            user_data={
-                "first_name": update.effective_chat.first_name,
-                "second_name": update.effective_user.last_name,
-                "username": update.effective_user.name,
-                "password": hashed_password,
-                "telegram_id": update.effective_user.id
-            }
-        )
-        pokeroom._LOGGER.debug(f"Success register \n {tokens.access} \n {tokens.refresh}")
-        await update.message.reply_text("\
-                                        🚀 Yo! Success registration!\
-                                        ")
-    except Exception as exp:
-        pokeroom._LOGGER.debug(f"Something was wrong: {str(exp)}")
-        await update.message.reply_text("\
-                                        🤖 Sorry. Something was wrong. Try again later...\
-                                        ")
-    
+
 async def create_team(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """ Starts the conversation and asks for team name. """
     await update.message.reply_text(
@@ -100,7 +69,7 @@ async def confirmed_information_team(update: Update, context: ContextTypes.DEFAU
     if query.data == "yes":
         try:
             registered_team: Team = await pokeroom.create_team(
-                "",
+                access_token=get_user_by_telegram_id(update.effective_user.id).access_token, 
                 name=context.user_data.get("team_name"),
                 description=context.user_data.get("team_description") or None
             )

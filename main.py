@@ -5,14 +5,8 @@ from watchdog.events import FileSystemEventHandler, FileSystemEvent
 import os, sys
 
 from core import settings
-from bot.methods import (
-    wake_up_samurai, 
-    register_in_pokeroom,
-    create_team,
-    receive_team_name,
-    receive_team_description,
-    confirmed_information_team,
-)
+from bot.methods.teams import create_team, receive_team_name, receive_team_description, confirmed_information_team, get_teams
+from bot.methods.user import register_in_pokeroom
 
 # like or not like cat or funny sad
 logger = settings.logging.getLogger(__name__)
@@ -23,7 +17,7 @@ def main() -> None:
     
     # Очередь имеет значение. от частного к общему!
     # app.add_handler(CommandHandler(command='newcat', callback=send_cat_image))
-    app.add_handler(CommandHandler(command='start', callback=wake_up_samurai))
+    # app.add_handler(CommandHandler(command='start', callback=wake_up_samurai))
     app.add_handler(CommandHandler(command='register', callback=register_in_pokeroom)) 
     
     app.add_handler(ConversationHandler(
@@ -35,6 +29,7 @@ def main() -> None:
         },
         fallbacks=[]
     ))
+    app.add_handler(CommandHandler(command='get_teams', callback=get_teams))
     app.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=2.0)
 
 class FileChangeHandler(FileSystemEventHandler):

@@ -12,6 +12,7 @@ class Endpoints():
     def USERS_LIST(self) -> str:
         return self._USERS_LIST
     
+    @property
     def TOKEN_CREATE(self) -> str:
         return self._TOKEN_CREATE
         
@@ -19,7 +20,3 @@ class Endpoints():
     @cache
     def USER_TEAMS_LIST(self) -> str:
         return "%s/%s" % (self._USERS_LIST, self._TEAMS_LIST)
-
-    @property
-    def USERLINE(self) -> str:
-        return ""
