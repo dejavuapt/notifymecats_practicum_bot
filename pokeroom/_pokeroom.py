@@ -86,3 +86,25 @@ class Pokeroom(BaseRequest):
         )
         # response must be a list in everything. Check exception in `de_json` method
         return Team.de_list(result)
+
+    async def create_team(
+        self,
+        access_token: str, 
+        name: str, 
+        *,
+        description: Optional[str] = None
+    ) -> Team:
+        if access_token is None:
+            raise InvalidJWTToken()
+        
+        headers: JSONDict = {"Authorization": f"Bearer {access_token}"}
+        
+        result = await self._do_post(
+            self._ENDPOINTS.USER_TEAMS_LIST,
+            headers=headers,
+            data={
+                "name": name,
+                "description": description
+            }
+        )
+        return Team.de_json(result)

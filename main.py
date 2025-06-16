@@ -1,16 +1,18 @@
 from telegram import Bot, Update, Chat, ReplyKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackQueryHandler
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 import os, sys
 
 from core import settings
 from bot.methods import (
-    send_cat_image, 
     wake_up_samurai, 
     register_in_pokeroom,
+    create_team,
+    receive_team_name,
+    receive_team_description,
+    confirmed_information_team,
 )
-from bot.methods import USERNAME, EMAIL, PASSWORD
 
 # like or not like cat or funny sad
 logger = settings.logging.getLogger(__name__)
@@ -23,7 +25,16 @@ def main() -> None:
     # app.add_handler(CommandHandler(command='newcat', callback=send_cat_image))
     app.add_handler(CommandHandler(command='start', callback=wake_up_samurai))
     app.add_handler(CommandHandler(command='register', callback=register_in_pokeroom)) 
-    # poll_interval также блокирует на 20 секунд дело 0.0 итак базово стоит
+    
+    app.add_handler(ConversationHandler(
+        entry_points=[CommandHandler(command="create_team", callback=create_team)],
+        states={
+            0: [MessageHandler(filters=filters.TEXT, callback=receive_team_name)],
+            1: [MessageHandler(filters=filters.TEXT, callback=receive_team_description)],
+            2: [CallbackQueryHandler(callback=confirmed_information_team)]
+        },
+        fallbacks=[]
+    ))
     app.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=2.0)
 
 class FileChangeHandler(FileSystemEventHandler):
