@@ -6,18 +6,40 @@ from core.db import get_user_by_telegram_id
 
 pokeroom: Pokeroom = Pokeroom()
 
-async def get_teams(update: Update, cotnext: ContextTypes.DEFAULT_TYPE) -> None:
+async def get_teams(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     teams: tuple[Team, ...] = await pokeroom.get_teams(
         access_token=get_user_by_telegram_id(update.effective_user.id).access_token
     )
-    teamss = [team.name for team in teams]
+    if not teams:
+        await update.message.reply_text("Sorry. You haven't command. You can create with /create_team command.")
+        return
+
+    keyboard = [
+        [InlineKeyboardButton(f"{team.name} {team.user_role}", callback_data=f"team_{team.id}")] for team in teams
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"Is your teams: {teamss}",
+        f"Choose a team from the list below:",
         parse_mode="Markdown",
-        # reply_markup=reply_keyboard
+        reply_markup=reply_markup
     ) 
+
+async def handle_team_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
     
+    data = query.data
+    team_id = data.replace("team_", "")
+    
+    # keyboard = [ [InlineKeyboardButton("<<", callback_data="")] ]
+    # reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        f"Here it is: {team_id}"
+        "\nWhat do you want to do with the team?",
+        reply_markup=None
+    )
 
 async def create_team(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """ Starts the conversation and asks for team name. """

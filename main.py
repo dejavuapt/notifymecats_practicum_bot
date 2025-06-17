@@ -5,7 +5,7 @@ from watchdog.events import FileSystemEventHandler, FileSystemEvent
 import os, sys
 
 from core import settings
-from bot.methods.teams import create_team, receive_team_name, receive_team_description, confirmed_information_team, get_teams
+from bot.methods.teams import create_team, receive_team_name, receive_team_description, confirmed_information_team, get_teams, handle_team_selected
 from bot.methods.user import register_in_pokeroom
 
 # like or not like cat or funny sad
@@ -30,6 +30,9 @@ def main() -> None:
         fallbacks=[]
     ))
     app.add_handler(CommandHandler(command='get_teams', callback=get_teams))
+    app.add_handler(CallbackQueryHandler(callback=handle_team_selected, pattern=r"^team_"))
+    # app.add_handler(CallbackQueryHandler(pattern=r"back_get_teams", callback=get_teams))
+    
     app.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=2.0)
 
 class FileChangeHandler(FileSystemEventHandler):

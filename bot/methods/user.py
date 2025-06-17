@@ -20,8 +20,9 @@ async def register_in_pokeroom(update: Update, context: ContextTypes.DEFAULT_TYP
             "first_name": chat_user.first_name,
             "last_name": chat_user.last_name,
             "username": chat_user.name,
-            "telegram_id": chat_user.id
+            "telegram_id": str(chat_user.id)
         }
+        print(user_data)
         user_data.update({"password": hashed_password,})
         tokens: Token = await pokeroom.registration_in_service(
             user_data=user_data
