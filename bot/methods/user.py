@@ -2,7 +2,7 @@ from telegram import Update
 import hashlib
 from telegram.ext import ContextTypes
 from pokeroom._pokeroom import Pokeroom
-from pokeroom._pokeroomobject import Token, Team
+from pokeroom._tokenobject import Token
 from core.db import create_user
 from typing import Any
 from core.settings import RANDOM_SEED

@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
 from pokeroom._pokeroom import Pokeroom
-from pokeroom._pokeroomobject import Token, Team
+from pokeroom._teamobject import Team
 from core.db import get_user_by_telegram_id
 
 pokeroom: Pokeroom = Pokeroom()
@@ -29,15 +29,19 @@ async def handle_team_selected(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     await query.answer()
     
-    data = query.data
-    team_id = data.replace("team_", "")
-    
     # keyboard = [ [InlineKeyboardButton("<<", callback_data="")] ]
     # reply_markup = InlineKeyboardMarkup(keyboard)
+    team_info: Team = await pokeroom.get_team_info(
+        access_token=get_user_by_telegram_id(update.effective_user.id).access_token,
+        id=query.data.replace("team_", "")
+    )
     
     await query.edit_message_text(
-        f"Here it is: {team_id}"
-        "\nWhat do you want to do with the team?",
+        f"Here it is: *{team_info.name}*\n"
+        f"Description: *{team_info.description}*\n\n"
+        f"Your are *{team_info.user_role.lower()}* in team",
+        # "\nWhat do you want to do with the team?",
+        parse_mode="Markdown",
         reply_markup=None
     )
 
