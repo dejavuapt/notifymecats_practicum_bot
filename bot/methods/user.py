@@ -5,14 +5,23 @@ from pokeroom._pokeroom import Pokeroom
 from pokeroom._pokeroomobject import Token, Team
 from core.db import create_user
 from typing import Any
+from core.settings import RANDOM_SEED
+import random
 
 pokeroom: Pokeroom = Pokeroom()
-
-
+def generate_hashed_password(
+    password: str, 
+    seed: str,
+    slc: int,
+    ) -> str:
+    random.seed(seed)
+    random.shuffle(password)
+    return hashlib.sha256(string=password.encode()).hexdigest()[:slc]
+    
 async def register_in_pokeroom(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    hashed_password = hashlib\
-        .sha256(string=f"{update.effective_user.id}{update.effective_user.name}".encode())\
-        .hexdigest()[:20]
+    hashed_password = generate_hashed_password(f"{update.effective_user.id}{update.effective_user.name}",
+                                               RANDOM_SEED, 
+                                               20)
     
     chat_user = update.effective_user
     try:

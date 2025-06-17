@@ -36,3 +36,6 @@ def build_database_url(settings: dict) -> str:
 
 
 DATABASE_URL = build_database_url(DATABASE)
+
+
+RANDOM_SEED = os.getenv("RANDOM_SEED")
