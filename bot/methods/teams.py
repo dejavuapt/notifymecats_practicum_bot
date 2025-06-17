@@ -11,7 +11,7 @@ async def get_teams(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         access_token=get_user_by_telegram_id(update.effective_user.id).access_token
     )
     if not teams:
-        await update.message.reply_text("Sorry. You haven't command. You can create with /create_team command.")
+        await update.message.reply_text("Sorry. You haven't teams. You can create with /create_team command.")
         return
 
     keyboard = [
