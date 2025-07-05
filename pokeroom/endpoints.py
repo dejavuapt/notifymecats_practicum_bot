@@ -6,7 +6,7 @@ class Endpoints():
     def __init__(self):
         self._USERS_LIST: str = "u"
         self._TOKEN_CREATE: str = "token/jwt/create"
-        self._TEAMS_LIST: str = "teams"
+        self._TEAMS_LIST: str = "t"
     
     @property
     def USERS_LIST(self) -> str:
@@ -19,4 +19,4 @@ class Endpoints():
     @property
     @cache
     def USER_TEAMS_LIST(self) -> str:
-        return "%s/%s" % (self._USERS_LIST, self._TEAMS_LIST)
+        return self._TEAMS_LIST

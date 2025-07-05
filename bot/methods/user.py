@@ -2,28 +2,29 @@ from telegram import Update
 import hashlib
 from telegram.ext import ContextTypes
 from pokeroom._pokeroom import Pokeroom
-from pokeroom._pokeroomobject import Token, Team
-from core.db import create_user
+from pokeroom._tokenobject import Token
+from pokeroom._teamobject import Team
+from core.db import create_user, get_user_by_telegram_id
 from typing import Any
 from core.settings import RANDOM_SEED
 import random
 
-pokeroom: Pokeroom = Pokeroom()
-def generate_hashed_password(
-    password: str, 
-    seed: str,
-    slc: int,
-    ) -> str:
+pokeroom: Pokeroom = Pokeroom() # need convert to singlethon
+def generate_hashed_password(password: str, 
+                             seed: str,
+                             slc: int,) -> str:
     random.seed(seed)
-    random.shuffle(password)
+    # random.shuffle(password) # str in unmutable
     return hashlib.sha256(string=password.encode()).hexdigest()[:slc]
     
 async def register_in_pokeroom(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    hashed_password = generate_hashed_password(f"{update.effective_user.id}{update.effective_user.name}",
-                                               RANDOM_SEED, 
-                                               20)
     
     chat_user = update.effective_user
+    user = get_user_by_telegram_id(str(chat_user.id))
+    if user:
+        await update.message.reply_text("You already registered!")
+        return
+    
     try:
         user_data: dict[str, Any] = {
             "first_name": chat_user.first_name,
@@ -32,16 +33,15 @@ async def register_in_pokeroom(update: Update, context: ContextTypes.DEFAULT_TYP
             "telegram_id": str(chat_user.id)
         }
         print(user_data)
+        hashed_password = generate_hashed_password(f"{update.effective_user.id}{update.effective_user.name}",
+                                                RANDOM_SEED, 
+                                                20)
         user_data.update({"password": hashed_password,})
-        tokens: Token = await pokeroom.registration_in_service(
-            user_data=user_data
-        )
+        tokens: Token = await pokeroom.registration_in_service(user_data=user_data)
         pokeroom._LOGGER.debug(f"Success register \n {tokens.access} \n {tokens.refresh}")
         user_data.pop("password")
         user_data.update({"access_token": tokens.access, "refresh_token": tokens.refresh})
-        create_user(
-            **user_data
-        )
+        create_user(**user_data)
         await update.message.reply_text("\
                                         🚀 Yo! Success registration!\
                                         ")

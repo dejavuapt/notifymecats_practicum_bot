@@ -9,7 +9,7 @@ SessionLocal = sessionmaker(bind=engine)
 
 def get_user_by_telegram_id(
     telegram_id: int
-) -> User:
+) -> User | None:
     session = SessionLocal()
     user = session.query(User).filter(User.telegram_id == telegram_id).first()
     session.close()

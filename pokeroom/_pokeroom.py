@@ -5,7 +5,9 @@ from pokeroom.endpoints import Endpoints
 from typing import Union, Optional, Any
 import requests
 
-from pokeroom._pokeroomobject import Team, Token
+from pokeroom._teamobject import Team
+from pokeroom._tokenobject import Token
+from pokeroom._memberobject import Member
 from pokeroom._baserequest import BaseRequest
 
 class Pokeroom(BaseRequest):
@@ -86,6 +88,30 @@ class Pokeroom(BaseRequest):
         )
         # response must be a list in everything. Check exception in `de_json` method
         return Team.de_list(result)
+    
+    async def get_team(self, team_id, access_token: str) -> Team:
+        if access_token is None:
+            raise NotImplemented()
+        
+        headers: JSONDict = {"Authorization": f"Bearer {access_token}"}
+        result = await self._do_get(
+            self._ENDPOINTS.USER_TEAMS_LIST + "/" + team_id,
+            headers
+        )
+        return Team.de_json(result)
+    
+    async def get_members_of_team(self, team_id, access_token: str) -> tuple[Member, ...]:
+        if access_token is None:
+            raise NotImplemented()
+        
+        headers: JSONDict = {"Authorization": f"Bearer {access_token}"}
+        
+        result = await self._do_get(
+            self._ENDPOINTS.USER_TEAMS_LIST + "/" + team_id + "/members",
+            headers
+        ) 
+        return Member.de_list(result)
+        
 
     async def create_team(
         self,
